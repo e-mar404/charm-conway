@@ -1,21 +1,22 @@
 package tui
 
-import "math/rand"
+import (
+	"math/rand"
+)
 
-func randomState(width, height int) [][]bool {
-	var state [][]bool
+func randomState(width, height int) [][]int {
+	var state [][]int
 	for range height {
-		row := make([]bool, width)
+		row := make([]int, width)
 		state = append(state, row)
 	}
 
 	for r, row := range state {
 		for c := range row {
-			// have a probability of 20%
-			// this had modulo bias but its good enough for now
+			// this might has modulo bias but its good enough for now
 			isAlive := (rand.Int() % 5) == 0
 			if isAlive {
-				state[r][c] = true
+				state[r][c] = 1
 			}
 		}
 	}
@@ -23,10 +24,73 @@ func randomState(width, height int) [][]bool {
 	return state
 }
 
-func nextGeneration(state [][]bool) {
-	// do checks here:
-	// 1. Any live cell with fewer than two live neighbours dies, as if by underpopulation.
-	// 2. Any live cell with two or three live neighbours lives on to the next generation.
-	// 3. Any live cell with more than three live neighbours dies, as if by overpopulation.
-	// 4. Any dead cell with exactly three live neighbours becomes a live cell, as if by reproduction.
+func nextGeneration(state [][]int) [][]int {
+	height := len(state)
+	width := len(state[0])
+	var newState [][]int
+	for range height {
+		newRow := make([]int, width)
+		newState = append(newState, newRow)
+	}
+
+	for r, row := range state {
+		for c := range row {
+			neighbours := neighbourCount(state, r, c)
+			switch state[r][c] {
+			case 0:
+				if neighbours == 3 {
+					newState[r][c] = 1
+				}
+			case 1:
+				switch neighbours {
+				case 2, 3:
+					newState[r][c] = state[r][c]
+				default:
+					newState[r][c] = 0
+				}
+			}
+		}
+	}
+
+	return newState
+}
+
+func neighbourCount(state [][]int, row, col int) int {
+	width := len(state[0])
+	height := len(state)
+	count := 0
+
+	if row-1 >= 0 && col-1 >= 0 {
+		count += state[row-1][col-1]
+	}
+
+	if row-1 >= 0 {
+		count += state[row-1][col]
+	}
+
+	if row-1 >= 0 && col+1 < width {
+		count += state[row-1][col+1]
+	}
+
+	if col-1 >= 0 {
+		count += state[row][col-1]
+	}
+
+	if col+1 < width {
+		count += state[row][col+1]
+	}
+
+	if row+1 < height && col-1 >= 0 {
+		count += state[row+1][col-1]
+	}
+
+	if row+1 < height {
+		count += state[row+1][col]
+	}
+
+	if row+1 < height && col+1 < width {
+		count += state[row+1][col+1]
+	}
+
+	return count
 }

@@ -7,9 +7,8 @@ import (
 )
 
 func Run() {
-	p := tea.NewProgram(model{}, tea.WithAltScreen())
+	p := tea.NewProgram(newGame(), tea.WithAltScreen())
 	if _, err := p.Run(); err != nil {
 		fmt.Printf("error: %v\n", err)
 	}
 }
-
